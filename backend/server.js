@@ -1,6 +1,9 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
-const supabase = require("./config/supabase");
+
+const comprasRoutes = require("./routes/comprasRoutes");
 
 const app = express();
 
@@ -10,69 +13,21 @@ app.use(express.json());
 app.get("/", (req, res) => {
     res.json({
         sistema: "RD Assistente",
-        status: "online"
+        status: "online",
+        versao: "1.0.0"
     });
 });
 
+app.use("/compras", comprasRoutes);
 
-app.get("/teste-supabase", async (req, res) => {
-
-    const { data, error } = await supabase
-        .from("usuarios")
-        .select("*");
-
-    if (error) {
-        return res.status(500).json({
-            erro: error.message
-        });
-    }
-
-    res.json({
-        conectado: true,
-        dados: data
+app.use((req, res) => {
+    res.status(404).json({
+        erro: "Rota não encontrada"
     });
 });
 
-app.post("/compras", async (req, res) => {
-
-    const {
-        descricao,
-        valor,
-        categoria,
-        tipo,
-        observacao
-    } = req.body;
-
-
-    const { data, error } = await supabase
-        .from("compras")
-        .insert([
-            {
-                descricao,
-                valor,
-                categoria,
-                tipo,
-                observacao
-            }
-        ])
-        .select();
-
-
-    if (error) {
-        return res.status(500).json({
-            erro: error.message
-        });
-    }
-
-
-    res.json({
-        sucesso: true,
-        compra: data
-    });
-
-});
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`RD Assistente rodando na porta ${PORT}`);
+    console.log(`🚀 RD Assistente rodando na porta ${PORT}`);
 });
